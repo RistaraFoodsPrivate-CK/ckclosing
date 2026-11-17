@@ -68,7 +68,7 @@ td input{width:76px;padding:3px 5px}.sh{color:var(--sh);font-weight:600}.ex{colo
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"></script>
 <script>
 // 1) PASTE YOUR FIREBASE WEB APP CONFIG HERE (Firebase console > Project settings > Your apps)
-const firebaseConfig={apiKey:"PASTE_HERE",authDomain:"PASTE_HERE",projectId:"PASTE_HERE",appId:"PASTE_HERE"};
+const firebaseConfig={apiKey:"AIzaSyAcnV2zDioUsuS0AORAgFaDQ6BMOe1Ohkg",authDomain:"closingck-d7c5b.firebaseapp.com",projectId:"closingck-d7c5b",appId:"1:594496597667:web:9c637fdcb00c13079e9916"};
 const $=s=>document.querySelector(s),key=s=>String(s||'').trim().toLowerCase(),fmt=n=>Number(n||0).toLocaleString('en-IN',{maximumFractionDigits:1}),esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js');
 let items=[],closing=[],team=[],users=[],me=null,ch=null,pg='dash',unsub=[],isAdm=false,canView=false,canEntry=false,vRows=[],dip=null,auth,db,fUser={};
