@@ -83,8 +83,9 @@ else{
 firebase.initializeApp(firebaseConfig);auth=firebase.auth();db=firebase.firestore();db.enablePersistence({synchronizeTabs:true}).catch(()=>{});
 auth.onAuthStateChanged(async u=>{unsub.forEach(f=>f());unsub=[];me=null;
  if(!u){$('#app').classList.add('hide');$('#login').classList.remove('hide');return}
- let s;try{s=await db.doc('users/'+u.uid).get()}catch(e){}
- if(!s||!s.exists){$('#lM').textContent='No access yet. Ask the admin.';auth.signOut();return}
+ let s,er='';try{s=await db.doc('users/'+u.uid).get()}catch(e){er=e.code||e.message}
+ if(er){$('#lM').textContent='Could not read your user record ('+er+'). Check that the Firestore rules are published.';auth.signOut();return}
+ if(!s||!s.exists){$('#lM').textContent='No user record found. In Firestore create collection "users" with a document whose ID is exactly: '+u.uid;auth.signOut();return}
  me={uid:u.uid,...s.data()};isAdm=me.role==='admin';
  if(!isAdm&&!me.active){me=null;$('#lM').textContent='Your access is not allowed. Please contact the admin.';auth.signOut();return}
  canView=can('dash')||can('data');
