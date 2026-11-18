@@ -28,6 +28,7 @@ input,select{background:var(--in);color:var(--tx);border:1px solid var(--bd);bor
 td input{width:76px;padding:3px 5px}.sh{color:var(--sh);font-weight:600}.ex{color:var(--ex);font-weight:600}.wa{color:var(--wa);font-weight:600}.mu{color:var(--mu)}h3{margin:0 0 8px;font-size:12px}.cv{position:relative;height:220px}.hide{display:none!important}
 .fld{display:block;margin:10px 0 4px;font-weight:600;font-size:11px}.fld+input,.fld+select{width:100%;font-size:15px;padding:10px}.big{width:100%;font-size:13px;padding:10px}
 .chips span{background:var(--in);border:1px solid var(--bd);border-radius:20px;padding:2px 9px;margin:0 6px 4px 0;display:inline-block}
+.elist{position:absolute;left:0;right:0;top:100%;z-index:8;background:var(--card);border:1px solid var(--bd);border-radius:8px;max-height:220px;overflow:auto;box-shadow:0 6px 16px #0003}.elist div{padding:10px;border-bottom:1px solid var(--bd);font-size:13px}.pen{color:var(--pr)}
 #ov{display:none}
 @media(max-width:800px){aside{position:fixed;left:0;top:0;z-index:20;transform:translateX(-100%);width:200px}body.open aside{transform:none}body.open #ov{display:block;position:fixed;inset:0;background:#0006;z-index:10}}
 </style></head><body>
@@ -57,7 +58,7 @@ td input{width:76px;padding:3px 5px}.sh{color:var(--sh);font-weight:600}.ex{colo
 <div class="card"><h3>Team members</h3><div class="row"><input id="uN" placeholder="Name"><input id="uE" type="email" placeholder="Email"><input id="uP" type="password" placeholder="Password (min 6)"><button class="b" onclick="addMember()">Add member</button></div><p id="uM" class="mu"></p><p class="mu">Tick “Allow login” first, then tick only the options that person may use. Admin always sees everything.</p><div class="tw" id="uTable"></div></div>
 <div class="card"><h3>Item master</h3><div class="row"><input id="aN" placeholder="Item name"><input id="aU" placeholder="UOM" style="width:70px"><input id="aC" type="number" placeholder="Price" style="width:80px"><input id="aCat" placeholder="Category"><input id="aSub" placeholder="Sub category"><button class="b" onclick="addItem()">Add</button></div>
 <div class="row"><button class="b g" onclick="tmpl('master')">⬇ Template</button><input type="file" id="mFile" accept=".xlsx,.xls,.csv"><button class="b g" onclick="impMaster()">Import master</button><input id="mQ" placeholder="Search…"></div><p class="mu">Excel: Date, Item Name, UOM, Cost, Category, Sub Category. The price with the latest date is always used.</p><div class="tw" id="mTable"></div></div></section>
-<section id="p-ent" class="hide"><div class="card"><h3>Stock count entry</h3><label class="fld">Date</label><input type="date" id="eDate"><label class="fld">Stock name</label><select id="eItem"></select><label class="fld">Qty</label><input type="number" inputmode="decimal" id="eQty" placeholder="0"><label class="fld">MFD</label><input type="date" id="eMfd"><label class="fld">Use by</label><input type="date" id="eUse"><p><button class="b big" onclick="submitEntry()">Save count</button></p><div id="eMsg"></div></div><div class="card"><h3>My entries</h3><div id="myTable"></div></div></section>
+<section id="p-ent" class="hide"><div class="card"><h3>Stock count entry</h3><label class="fld">Date</label><input type="date" id="eDate"><label class="fld">Stock name</label><div style="position:relative"><input id="eItem" placeholder="Type to search item…" autocomplete="off" style="width:100%;font-size:15px;padding:10px"><div id="eList" class="elist hide"></div></div><label class="fld">Qty</label><input type="number" inputmode="decimal" id="eQty" placeholder="0"><label class="fld">MFD</label><input type="date" id="eMfd"><label class="fld">Use by</label><input type="date" id="eUse"><p><button class="b big" onclick="submitEntry()">Save count</button></p><div id="eMsg"></div></div><div class="card"><h3>My entries</h3><p class="mu" style="margin:0 0 6px">Latest first. Saved entries cannot be changed here. Ask the admin to correct a mistake.</p><div id="myTable"></div></div></section>
 </main></div></div>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -71,7 +72,7 @@ td input{width:76px;padding:3px 5px}.sh{color:var(--sh);font-weight:600}.ex{colo
 const firebaseConfig={apiKey:"AIzaSyAcnV2zDioUsuS0AORAgFaDQ6BMOe1Ohkg",authDomain:"closingck-d7c5b.firebaseapp.com",projectId:"closingck-d7c5b",appId:"1:594496597667:web:9c637fdcb00c13079e9916"};
 const $=s=>document.querySelector(s),key=s=>String(s||'').trim().toLowerCase(),fmt=n=>Number(n||0).toLocaleString('en-IN',{maximumFractionDigits:1}),esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js');
-let items=[],closing=[],team=[],users=[],me=null,ch=null,pg='dash',unsub=[],isAdm=false,canView=false,canEntry=false,vRows=[],dip=null,auth,db,fUser={};
+let items=[],closing=[],team=[],users=[],me=null,ch=null,pg='dash',unsub=[],isAdm=false,canView=false,canEntry=false,vRows=[],dip=null,auth,db,fUser={},tEditId='';
 const pages=[['dash','Dashboard','dash','📊'],['data','Stock data','data','📋'],['team','Team Entry','team','👥'],['imp','Import','imp','⬆'],['adm','Admin','admin','⚙'],['ent','Count entry','ent','✏']];
 const can=k=>k==='admin'?isAdm:isAdm||!!(me&&me.active&&me.perms&&me.perms[k]);
 const ok=can;
@@ -126,7 +127,7 @@ function alerts(rows){const H={};eff().filter(r=>r.counted&&r.hasSys).forEach(r=
 function fillDates(sel){const d=dates().reverse(),v=sel.value;sel.innerHTML=d.map(x=>`<option>${x}</option>`).join('')||'<option value="">No data</option>';if(d.includes(v))sel.value=v}
 function render(){if(!me)return;fillDates($('#vDate'));fillDates($('#tmDate'));if(can('dash'))dash();if(can('data'))dataTable();if(can('team'))teamTable();if(isAdm){masterTable();userTable()}if(can('ent'))entryUI()}
 ['fFrom','fTo','fCat','fSub','tType','tName','tMet','topBy'].forEach(id=>$('#'+id).addEventListener('change',()=>{if(id==='fFrom')fUser.from=true;if(id==='fTo')fUser.to=true;dash(['tName','tMet','topBy'].includes(id))}));
-$('#vDate').onchange=dataTable;$('#vQ').oninput=dataTable;$('#mQ').oninput=masterTable;$('#tmDate').onchange=teamTable;$('#eDate').onchange=entryUI;
+$('#vDate').onchange=dataTable;$('#vQ').oninput=dataTable;$('#mQ').oninput=masterTable;$('#tmDate').onchange=teamTable;$('#eItem').oninput=eSearch;$('#eItem').onfocus=eSearch;$('#eList').onclick=e=>{const n=e.target.dataset.n;if(n){$('#eItem').value=n;$('#eList').classList.add('hide')}};document.addEventListener('click',e=>{if(!e.target.closest('#eItem,#eList'))$('#eList').classList.add('hide')});
 function resetF(){fUser.from=fUser.to=false;dash()}
 function fillCats(){const c=$('#fCat'),cv=c.value,cats=[...new Set(items.map(i=>i.cat).filter(Boolean))].sort();
  c.innerHTML='<option value="">All categories</option>'+cats.map(x=>`<option>${esc(x)}</option>`).join('');c.value=cats.includes(cv)?cv:'';
@@ -162,15 +163,23 @@ function delRow(i){const r=vRows[i];if(r&&confirm('Delete uploaded system/manual
 async function batchDo(ops){for(let i=0;i<ops.length;i+=400){const b=db.batch();ops.slice(i,i+400).forEach(f=>f(b));await b.commit()}}
 async function delDate(){const d=$('#vDate').value;if(d&&confirm('Delete all uploaded rows for '+d+'? (team entries stay)'))await batchDo(closing.filter(r=>r.date===d).map(r=>b=>b.delete(db.doc('closing/'+r.id))))}
 function teamTable(){const d=$('#tmDate').value,a=team.filter(t=>t.date===d).sort((x,y)=>(y.ts||0)-(x.ts||0));
- $('#tmTable').innerHTML=a.length?'<table><tr><th>Item</th><th>Qty</th><th>MFD</th><th>Use by</th><th>By</th><th></th></tr>'+a.map(t=>`<tr><td>${esc(t.item)}</td><td><input type="number" value="${t.qty}" onchange="tEdit('${t.id}',this.value)"></td><td>${esc(t.mfd||'')}</td><td>${esc(t.use||'')}</td><td>${esc(t.by||'')}</td><td><button class="d" onclick="tDel('${t.id}')">✕</button></td></tr>`).join('')+'</table>':'<p class="mu">No team entries for this date.</p>'}
-function tEdit(id,v){db.doc('counts/'+id).update({qty:+v||0}).catch(()=>alert('Not allowed'))}
+ $('#tmTable').innerHTML=a.length?'<table><tr><th>Item</th><th>Qty</th><th>MFD</th><th>Use by</th><th>By</th><th></th></tr>'+a.map(t=>`<tr><td>${esc(t.item)}</td><td>${tEditId===t.id?`<input type="number" value="${t.qty}" onchange="tEdit('${t.id}',this.value)">`:`<b>${fmt(t.qty)}</b>`}</td><td>${esc(t.mfd||'')}</td><td>${esc(t.use||'')}</td><td>${esc(t.by||'')}</td><td>${isAdm?`<button class="d pen" title="Edit qty" onclick="tPen('${t.id}')">✏</button><button class="d" title="Delete" onclick="tDel('${t.id}')">✕</button>`:''}</td></tr>`).join('')+'</table>':'<p class="mu">No team entries for this date.</p>'}
+function tPen(id){tEditId=tEditId===id?'':id;teamTable()}
+function tEdit(id,v){tEditId='';db.doc('counts/'+id).update({qty:+v||0}).catch(()=>alert('Not allowed'));teamTable()}
 function tDel(id){if(confirm('Delete this entry?'))db.doc('counts/'+id).delete().catch(()=>alert('Not allowed'))}
-function entryUI(){const sel=$('#eItem'),v=sel.value;sel.innerHTML=[...items].sort((a,b)=>a.name.localeCompare(b.name)).map(i=>`<option>${esc(i.name)}</option>`).join('');if(v)sel.value=v;if(!$('#eDate').value)$('#eDate').value=today();
- const my=team.filter(t=>t.uid===me.uid&&t.date===$('#eDate').value).sort((x,y)=>(y.ts||0)-(x.ts||0));
- $('#myTable').innerHTML=my.length?my.map(t=>`<div class="row" style="justify-content:space-between"><span>${esc(t.item)} · <b>${fmt(t.qty)}</b></span><button class="d" onclick="tDel('${t.id}')">✕</button></div>`).join(''):'<p class="mu">Nothing entered for this date yet.</p>'}
-function submitEntry(){const item=$('#eItem').value,q=$('#eQty').value;if(!item||q===''){$('#eMsg').innerHTML='<p class="sh">Choose stock name and enter qty.</p>';return}
- db.collection('counts').add({date:$('#eDate').value,item,qty:+q,mfd:$('#eMfd').value,use:$('#eUse').value,uid:me.uid,by:me.name||me.email||'',ts:Date.now()}).catch(()=>{$('#eMsg').innerHTML='<p class="sh">Could not save.</p>'});
- $('#eQty').value='';$('#eMsg').innerHTML='<p class="ex">Saved ✓</p>'}
+function entryUI(){if(!$('#eDate').value)$('#eDate').value=today();
+ const my=team.filter(t=>t.uid===me.uid).sort((x,y)=>(y.ts||0)-(x.ts||0)).slice(0,50);
+ $('#myTable').innerHTML=my.length?my.map(t=>`<div style="padding:7px 0;border-bottom:1px solid var(--bd)"><div class="row" style="justify-content:space-between;margin:0"><b>${esc(t.item)}</b><b>${fmt(t.qty)}</b></div><div class="mu">${esc(t.date)} · MFD ${esc(t.mfd||'-')} · Use by ${esc(t.use||'-')}</div></div>`).join(''):'<p class="mu">Nothing entered yet.</p>'}
+function eSearch(){const q=key($('#eItem').value).split(/\s+/).filter(Boolean),box=$('#eList');
+ const a=items.filter(i=>q.every(w=>key(i.name).includes(w))).sort((x,y)=>x.name.localeCompare(y.name)).slice(0,40);
+ box.innerHTML=a.map(i=>`<div data-n="${esc(i.name)}">${esc(i.name)}</div>`).join('')||'<div class="mu">No match</div>';box.classList.remove('hide')}
+function submitEntry(){const it=items.find(i=>key(i.name)===key($('#eItem').value)),q=$('#eQty').value,m=$('#eMsg');
+ if(!it){m.innerHTML='<p class="sh">Pick the stock name from the list.</p>';return}
+ if(q===''){m.innerHTML='<p class="sh">Enter qty.</p>';return}
+ const rec={date:$('#eDate').value,item:it.name,qty:+q,mfd:$('#eMfd').value,use:$('#eUse').value,uid:me.uid,by:me.name||me.email||'',ts:Date.now()};
+ db.collection('counts').add(rec).catch(()=>{m.innerHTML='<p class="sh">Could not save. Try again.</p>'});
+ ['eItem','eQty','eMfd','eUse'].forEach(i=>$('#'+i).value='');$('#eList').classList.add('hide');
+ m.innerHTML='<p class="ex">Saved ✓</p>';setTimeout(()=>{if(m.textContent.includes('Saved'))m.innerHTML=''},2500)}
 async function addMember(){const n=$('#uN').value.trim(),e=$('#uE').value.trim(),p=$('#uP').value;if(!n||!e||p.length<6){$('#uM').textContent='Enter name, email and a password of 6+ characters.';return}
  try{const sec=firebase.apps.find(a=>a.name==='sec')||firebase.initializeApp(firebaseConfig,'sec');const c=await sec.auth().createUserWithEmailAndPassword(e,p);
  await db.doc('users/'+c.user.uid).set({name:n,email:e,role:'member',active:true,perms:{ent:true}});await sec.auth().signOut();['uN','uE','uP'].forEach(i=>$('#'+i).value='');$('#uM').textContent='Member added. Share the app link and these login details.'}catch(x){$('#uM').textContent='Could not add: '+x.message}}
