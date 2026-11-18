@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#4f46e5">
+<title>Inventory Closing Analysis</title>
+<style>
+:root{--bg:#f5f6fa;--card:#fff;--tx:#1f2638;--mu:#7a8399;--bd:#e6e9f2;--pr:#5b5bd6;--sh:#e5484d;--ex:#12a150;--wa:#d97706;--in:#f1f2fb;--sb:#1e2235;--hh:calc(44px + env(safe-area-inset-top))}
+@media(prefers-color-scheme:dark){:root{--bg:#0f1320;--card:#181d2e;--tx:#e8ebf5;--mu:#8f98b3;--bd:#2a3150;--pr:#7c7cf0;--sh:#ff6b70;--ex:#3ddc84;--wa:#fbbf24;--in:#232a48;--sb:#0b0e19;color-scheme:dark}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:11.5px/1.45 system-ui,sans-serif}
+#app{display:flex;min-height:100vh}#mainw{flex:1;min-width:0}
+aside{width:180px;background:var(--sb);color:#cfd4ea;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;flex:none;transition:width .2s,transform .2s;padding-top:env(safe-area-inset-top);overflow:hidden}
+.brand{padding:14px 14px 8px;font-weight:700;color:#fff;font-size:13px;white-space:nowrap}
+nav{display:flex;flex-direction:column;gap:2px;padding:6px;flex:1}.sf{padding:6px;border-top:1px solid #2a2f48}
+aside button{display:flex;align-items:center;gap:10px;width:100%;background:none;border:0;color:inherit;padding:8px 10px;border-radius:8px;font:inherit;text-align:left;cursor:pointer;white-space:nowrap}
+aside button:hover{background:#2a2f48}aside button.on{background:var(--pr);color:#fff}aside i{font-style:normal;width:18px;text-align:center;font-size:13px}
+body.mini aside{width:52px}body.mini aside span{display:none}
+header{position:sticky;top:0;z-index:6;background:var(--bg);display:flex;align-items:center;gap:10px;height:var(--hh);padding:env(safe-area-inset-top) 16px 0}
+.ham{background:var(--card);border:1px solid var(--bd);border-radius:8px;padding:3px 9px;font-size:14px;color:var(--tx);cursor:pointer}h1{font-size:14px;margin:0;flex:1}
+main{padding:0 16px 40px;max-width:1100px;margin:auto}
+.fbar{position:sticky;top:var(--hh);z-index:5;background:var(--bg);display:flex;gap:6px;flex-wrap:wrap;align-items:center;padding:6px 0 8px;border-bottom:1px solid var(--bd);margin-bottom:10px}.fbar label{color:var(--mu);font-size:10px}
+.card,.kpi{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:11px;margin-bottom:11px;box-shadow:0 1px 3px #0000000a}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:9px;margin-bottom:11px}.kpi{margin:0;border-left:3px solid var(--pr)}.kpi small{color:var(--mu)}.kpi b{display:block;font-size:16px}
+.row{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-bottom:8px}
+input,select{background:var(--in);color:var(--tx);border:1px solid var(--bd);border-radius:8px;padding:6px 8px;font:inherit;min-width:0}
+.b{background:var(--pr);color:#fff;border:0;border-radius:8px;padding:6px 11px;font:inherit;font-weight:600;cursor:pointer}.g{background:var(--in);color:var(--tx);border:1px solid var(--bd)}.d{background:none;border:0;color:var(--sh);font-size:13px;cursor:pointer}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:11px}@media(max-width:760px){.grid2{grid-template-columns:1fr}}
+.tw{overflow:auto;max-height:380px}table{border-collapse:collapse;width:100%}th,td{padding:5px 8px;text-align:left;border-bottom:1px solid var(--bd);white-space:nowrap}th{color:var(--mu);font-size:10px;font-weight:600;position:sticky;top:0;background:var(--card)}
+td input{width:76px;padding:3px 5px}.sh{color:var(--sh);font-weight:600}.ex{color:var(--ex);font-weight:600}.wa{color:var(--wa);font-weight:600}.mu{color:var(--mu)}h3{margin:0 0 8px;font-size:12px}.cv{position:relative;height:220px}.hide{display:none!important}
+.fld{display:block;margin:10px 0 4px;font-weight:600;font-size:11px}.fld+input,.fld+select{width:100%;font-size:15px;padding:10px}.big{width:100%;font-size:13px;padding:10px}
+.chips span{background:var(--in);border:1px solid var(--bd);border-radius:20px;padding:2px 9px;margin:0 6px 4px 0;display:inline-block}
+#ov{display:none}
+@media(max-width:800px){aside{position:fixed;left:0;top:0;z-index:20;transform:translateX(-100%);width:200px}body.open aside{transform:none}body.open #ov{display:block;position:fixed;inset:0;background:#0006;z-index:10}}
+</style></head><body>
+<div id="login" class="card hide" style="max-width:360px;margin:50px auto"><h3>📦 Inventory Closing – Sign in</h3>
+<input id="lE" type="email" placeholder="Email" style="width:100%;margin-bottom:8px"><input id="lP" type="password" placeholder="Password" style="width:100%;margin-bottom:10px">
+<button class="b big" onclick="signIn()">Sign in</button><p id="lM" class="sh"></p></div>
+<div id="app" class="hide">
+<aside><div class="brand">📦 <span>Inventory Closing</span></div><nav id="nav"></nav></aside>
+<div id="ov" onclick="tog()"></div>
+<div id="mainw"><header><button class="ham" onclick="tog()">☰</button><h1 id="ttl"></h1><span class="mu" id="who"></span></header>
+<main>
+<section id="p-dash">
+<div class="fbar"><label>From</label><input type="date" id="fFrom"><label>To</label><input type="date" id="fTo"><select id="fCat"></select><select id="fSub"></select><button class="b g" onclick="resetF()" title="Full range">↺</button></div>
+<div class="kpis" id="kpis"></div>
+<div class="card chips hide" id="byUser" style="padding:8px 11px"></div>
+<div class="card" id="alertBox"></div>
+<div class="card"><h3>Trend (latest price)</h3><div class="row"><select id="tType"><option value="item">Item wise</option><option value="cat">Category wise</option><option value="sub">Sub category wise</option></select><select id="tName"></select><select id="tMet"><option value="val">Value ₹</option><option value="qty">Qty</option></select></div><div class="cv"><canvas id="trend"></canvas></div></div>
+<div class="row"><b>Top 30 ranked by</b><select id="topBy"><option value="val">Value</option><option value="qty">Qty</option></select></div>
+<div class="grid2"><div class="card"><h3 class="sh">🔻 Top 30 Short</h3><div class="tw" id="tShort"></div></div><div class="card"><h3 class="ex">🔺 Top 30 Excess</h3><div class="tw" id="tEx"></div></div></div>
+<div class="grid2"><div class="card"><h3>Category-wise Cost Impact (₹)</h3><div class="tw" id="tCat"></div></div><div class="card"><h3>Sub Category-wise Cost Impact (₹)</h3><div class="tw" id="tSub"></div></div></div>
+<div class="card"><h3>Date-wise Closing Summary (₹)</h3><div class="tw" id="tDate"></div></div></section>
+<section id="p-data" class="hide"><div class="card"><div class="row"><select id="vDate"></select><input id="vQ" placeholder="Search item…"><button class="b g" onclick="delDate()">🗑 Delete uploads of this date</button></div><p class="mu" style="margin:0 0 8px">System qty and Manual qty. ⚠ = unusual variance, please recheck.</p><div class="tw" id="vTable"></div></div></section>
+<section id="p-imp" class="hide">
+<div class="card"><div class="row"><label>Date (used if the file has no date)</label><input type="date" id="iDate"></div><div id="iMsg"></div></div>
+<div class="card"><h3>Import system stock</h3><div class="row"><button class="b g" onclick="tmpl('sys')">⬇ Template</button></div><div class="row"><input type="file" id="iFile_sys" accept=".xlsx,.xls,.csv,.pdf"><button class="b" onclick="doImport('sys')">Upload system stock</button></div><p class="mu">Excel: Date, Item Name, System Qty. UOM, category and sub category are taken from the item master. PDF: item name followed by qty on each line.</p></div>
+<div class="card"><h3>Import closing stock – manual count (optional)</h3><div class="row"><button class="b g" onclick="tmpl('man')">⬇ Template</button></div><div class="row"><input type="file" id="iFile_man" accept=".xlsx,.xls,.csv,.pdf"><button class="b" onclick="doImport('man')">Upload manual count</button></div><p class="mu">Excel: Date, Item Name, Counted Qty. UOM, category and sub category are taken from the item master. Same date + item is overwritten.</p></div></section>
+<section id="p-adm" class="hide">
+<div class="card"><h3>Item master</h3><div class="row"><input id="aN" placeholder="Item name"><input id="aU" placeholder="UOM" style="width:70px"><input id="aC" type="number" placeholder="Price" style="width:80px"><input id="aCat" placeholder="Category"><input id="aSub" placeholder="Sub category"><button class="b" onclick="addItem()">Add</button></div>
+<div class="row"><button class="b g" onclick="tmpl('master')">⬇ Template</button><input type="file" id="mFile" accept=".xlsx,.xls,.csv"><button class="b g" onclick="impMaster()">Import master</button><input id="mQ" placeholder="Search…"></div><p class="mu">Excel: Date, Item Name, UOM, Cost, Category, Sub Category. The price with the latest date is always used.</p><div class="tw" id="mTable"></div></div>
+<div class="card"><h3>Backup</h3><p class="mu">Your data is saved inside this browser on this computer. Take a backup now and then.</p><div class="row"><button class="b g" onclick="backup()">⬇ Backup data</button><input type="file" id="rFile" accept=".json"><button class="b g" onclick="restore()">Restore backup</button></div></div></section>
+</main></div></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"></script>
+<script>
+// ---- local storage layer (replaces Firebase): data is kept in this browser (IndexedDB) ----
+const store={},subs=[];let authCb=null,st=null;
+const idb=new Promise(res=>{try{const r=indexedDB.open('inventory_closing',1);r.onupgradeneeded=()=>r.result.createObjectStore('kv');r.onsuccess=()=>res(r.result);r.onerror=()=>res(null)}catch(e){res(null)}});
+const ready=(async()=>{const d=await idb;if(d)await new Promise(ok=>{try{const q=d.transaction('kv').objectStore('kv').get('store');q.onsuccess=()=>{Object.assign(store,q.result||{});ok()};q.onerror=()=>ok()}catch(e){ok()}});store['users/admin1']={name:'Admin',role:'admin'}})();
+const saveStore=()=>{clearTimeout(st);st=setTimeout(async()=>{const d=await idb;if(!d)return;try{const c={...store};delete c['users/admin1'];d.transaction('kv','readwrite').objectStore('kv').put(c,'store')}catch(e){}},300)};
+const notify=()=>{subs.slice().forEach(f=>f());saveStore()};
+const mkSnap=(path,id)=>({exists:path in store,id,data:()=>store[path]});
+const put=(path,d,o)=>{store[path]=(o&&o.merge)?Object.assign(store[path]||{},d):d};
+function DocRef(path){return{path,get:async()=>mkSnap(path),set:async(d,o)=>{put(path,d,o);notify()},update:async d=>{store[path]=Object.assign(store[path]||{},d);notify()},delete:async()=>{delete store[path];notify()},onSnapshot(cb){const f=()=>cb(mkSnap(path));subs.push(f);f();return()=>{const i=subs.indexOf(f);if(i>=0)subs.splice(i,1)}}}}
+function Col(n,flt){return{where:(k,o,v)=>Col(n,r=>r[k]===v),add:async d=>{store[n+'/'+Math.random().toString(36).slice(2)]=d;notify()},onSnapshot(cb){const f=()=>cb({docs:Object.keys(store).filter(p=>p.startsWith(n+'/')&&(!flt||flt(store[p]))).map(p=>mkSnap(p,p.slice(n.length+1)))});subs.push(f);f();return()=>{const i=subs.indexOf(f);if(i>=0)subs.splice(i,1)}}}}
+const fdb={doc:DocRef,collection:n=>Col(n),enablePersistence:async()=>{},batch:()=>{const o=[];return{set:(r,d,op)=>o.push(()=>put(r.path,d,op)),delete:r=>o.push(()=>delete store[r.path]),commit:async()=>{o.forEach(f=>f());notify()}}}};
+const fauth={onAuthStateChanged(cb){authCb=cb;ready.then(()=>cb({uid:'admin1'}))},signOut:async()=>{},signInWithEmailAndPassword:async()=>{}};
+window.firebase={apps:[],initializeApp:()=>({}),auth:()=>fauth,firestore:()=>fdb};
+function backup(){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(store)],{type:'application/json'}));a.download='closing_backup_'+today()+'.json';a.click()}
+async function restore(){const f=$('#rFile').files[0];if(!f||!confirm('Replace ALL current data with this backup?'))return;try{const d=JSON.parse(await f.text());Object.keys(store).forEach(k=>delete store[k]);Object.assign(store,d);store['users/admin1']={name:'Admin',role:'admin'};notify();alert('Backup restored')}catch(e){alert('Not a valid backup file')}}
+</script>
+<script>
+const firebaseConfig={apiKey:"local",authDomain:"PASTE_HERE",projectId:"PASTE_HERE",appId:"PASTE_HERE"};
+const $=s=>document.querySelector(s),key=s=>String(s||'').trim().toLowerCase(),fmt=n=>Number(n||0).toLocaleString('en-IN',{maximumFractionDigits:1}),esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let items=[],closing=[],team=[],users=[],me=null,ch=null,pg='dash',unsub=[],isAdm=false,canView=false,canEntry=false,vRows=[],dip=null,auth,db,fUser={};
+const pages=[['dash','Dashboard','v','📊'],['data','Stock data','v','📋'],['imp','Import','a','⬆'],['adm','Admin','a','⚙']];
+const ok=t=>t==='v'?canView:t==='a'?isAdm:canEntry;
+const today=()=>new Date(Date.now()-new Date().getTimezoneOffset()*6e4).toISOString().slice(0,10);
+const did=(d,n)=>d+'_'+encodeURIComponent(key(n));
+function tog(){document.body.classList.toggle(innerWidth<800?'open':'mini')}
+if(firebaseConfig.apiKey.startsWith('PASTE')){$('#login').classList.remove('hide');$('#login').innerHTML='<h3>Setup needed</h3><p>Open index.html and paste your Firebase config at the top of the script.</p>'}
+else{
+firebase.initializeApp(firebaseConfig);auth=firebase.auth();db=firebase.firestore();db.enablePersistence({synchronizeTabs:true}).catch(()=>{});
+auth.onAuthStateChanged(async u=>{unsub.forEach(f=>f());unsub=[];me=null;
+ if(!u){$('#app').classList.add('hide');$('#login').classList.remove('hide');return}
+ let s;try{s=await db.doc('users/'+u.uid).get()}catch(e){}
+ if(!s||!s.exists){$('#lM').textContent='No access yet. Ask the admin.';auth.signOut();return}
+ me={uid:u.uid,...s.data()};isAdm=me.role==='admin';canView=isAdm||!!me.view;canEntry=isAdm||!!me.entry;
+ $('#login').classList.add('hide');$('#app').classList.remove('hide');$('#who').textContent=me.name||'';
+ unsub.push(db.doc('meta/master').onSnapshot(x=>{try{items=x.exists?JSON.parse(x.data().items):[]}catch(e){items=[]}render()}));
+ if(canView)unsub.push(db.collection('closing').onSnapshot(x=>{closing=x.docs.map(d=>({id:d.id,...d.data()}));render()}));
+ unsub.push((canView?db.collection('counts'):db.collection('counts').where('uid','==',u.uid)).onSnapshot(x=>{team=x.docs.map(d=>({id:d.id,...d.data()}));render()}));
+ if(isAdm)unsub.push(db.collection('users').onSnapshot(x=>{users=x.docs.map(d=>({id:d.id,...d.data()}));render()}));
+ go(canView?'dash':'ent')});
+}
+async function signIn(){$('#lM').textContent='';try{await auth.signInWithEmailAndPassword($('#lE').value.trim(),$('#lP').value)}catch(e){$('#lM').textContent='Wrong email or password.'}}
+$('#nav').onclick=e=>{const b=e.target.closest('button');if(b)go(b.dataset.p)};
+function go(p){if(!ok(pages.find(x=>x[0]===p)[2]))p=canView?'dash':'ent';pg=p;
+ document.body.classList.remove('open');$('#ttl').textContent=pages.find(x=>x[0]===p)[1];
+ $('#nav').innerHTML=pages.filter(x=>ok(x[2])).map(x=>`<button data-p="${x[0]}" class="${x[0]===p?'on':''}"><i>${x[3]}</i><span>${x[1]}</span></button>`).join('');
+ pages.forEach(x=>$('#p-'+x[0]).classList.toggle('hide',x[0]!==p));render()}
+// ---------- data logic ----------
+const mst=()=>{const m={};items.forEach(i=>m[key(i.name)]=i);return m};
+const lastP=i=>(i.prices||[]).slice().sort((a,b)=>a.d<b.d?-1:1).pop();
+const lat=i=>{const p=lastP(i);return p?+p.p:+i.cost||0};
+const latD=i=>{const p=lastP(i);return p?p.d:''};
+// merge uploads + team counts per date+item. manual = team total if any team entry, else uploaded manual.
+function eff(){const m={};
+ closing.forEach(r=>{m[r.date+'|'+key(r.item)]={id:r.id,date:r.date,item:r.item,sys:r.sys,man:r.man,src:r.man!=null?'Upload':'',by:[]}});
+ const ts={};team.forEach(t=>{const k=t.date+'|'+key(t.item);const o=ts[k]=ts[k]||{date:t.date,item:t.item,q:0,u:new Set()};o.q+=+t.qty||0;o.u.add(t.by||'Someone')});
+ Object.keys(ts).forEach(k=>{const t=ts[k],o=m[k]||(m[k]={id:'',date:t.date,item:t.item});o.man=t.q;o.src='Team';o.by=[...t.u]});
+ return Object.values(m).map(o=>({...o,hasSys:o.sys!=null,counted:o.man!=null,sys:+o.sys||0,man:+o.man||0}))}
+function enrich(r){const m=mst()[key(r.item)],c=m?lat(m):0;return{...r,mapped:!!m,cat:(m&&m.cat)||'Unmapped',sub:(m&&m.sub)||'Unmapped',uom:m?m.uom||'':'',dq:r.counted?r.man-r.sys:0,dv:r.counted?(r.man-r.sys)*c:0,sv:r.sys*c,mv:r.man*c}}
+const dates=()=>[...new Set(eff().map(r=>r.date))].sort();
+// latest counted record of each item inside the date range (always last count, last price)
+function snap(from,to,cat,sub){const L={};eff().filter(r=>r.counted&&(!from||r.date>=from)&&(!to||r.date<=to)).forEach(r=>{const k=key(r.item);if(!L[k]||r.date>L[k].date)L[k]=r});
+ return Object.values(L).map(enrich).filter(r=>(!cat||r.cat===cat)&&(!sub||r.sub===sub))}
+// unusual variance: compare with the item's own earlier variances
+function alerts(rows){const H={};eff().filter(r=>r.counted&&r.hasSys).forEach(r=>(H[key(r.item)]=H[key(r.item)]||[]).push(r));const out=[];
+ rows.forEach(r=>{if(!r.counted||!r.hasSys)return;const h=(H[key(r.item)]||[]).filter(x=>x.date<r.date).map(x=>x.man-x.sys);if(h.length<2)return;
+  const m=h.reduce((a,b)=>a+b,0)/h.length,sd=Math.sqrt(h.reduce((a,b)=>a+(b-m)**2,0)/h.length),dev=Math.abs(r.dq-m),th=Math.max(3*sd,.02*Math.max(r.sys,1));
+  if(dev>th)out.push({...r,usual:m})});return out.sort((a,b)=>Math.abs(b.dv)-Math.abs(a.dv))}
+function fillDates(sel){const d=dates().reverse(),v=sel.value;sel.innerHTML=d.map(x=>`<option>${x}</option>`).join('')||'<option value="">No data</option>';if(d.includes(v))sel.value=v}
+function render(){if(!me)return;fillDates($('#vDate'));dash();dataTable();masterTable()}
+['fFrom','fTo','fCat','fSub','tType','tName','tMet','topBy'].forEach(id=>$('#'+id).addEventListener('change',()=>{if(id==='fFrom')fUser.from=true;if(id==='fTo')fUser.to=true;dash(['tName','tMet','topBy'].includes(id))}));
+$('#vDate').onchange=dataTable;$('#vQ').oninput=dataTable;$('#mQ').oninput=masterTable;
+function resetF(){fUser.from=fUser.to=false;dash()}
+function fillCats(){const c=$('#fCat'),cv=c.value,cats=[...new Set(items.map(i=>i.cat).filter(Boolean))].sort();
+ c.innerHTML='<option value="">All categories</option>'+cats.map(x=>`<option>${esc(x)}</option>`).join('');c.value=cats.includes(cv)?cv:'';
+ const s=$('#fSub'),sv=s.value,subs=[...new Set(items.filter(i=>!c.value||i.cat===c.value).map(i=>i.sub).filter(Boolean))].sort();
+ s.innerHTML='<option value="">All sub categories</option>'+subs.map(x=>`<option>${esc(x)}</option>`).join('');s.value=subs.includes(sv)?sv:''}
+function fillNames(){const t=$('#tType').value,c=$('#fCat').value,s=$('#fSub').value,sel=$('#tName'),v=sel.value;
+ const n=[...new Set(items.filter(i=>(!c||i.cat===c)&&(!s||i.sub===s)).map(i=>t==='item'?i.name:t==='cat'?i.cat:i.sub).filter(Boolean))].sort();
+ sel.innerHTML=n.map(x=>`<option>${esc(x)}</option>`).join('');if(n.includes(v))sel.value=v}
+function dash(keep){const ds=dates();if(ds.length){if(!fUser.from)$('#fFrom').value=ds[0];if(!fUser.to)$('#fTo').value=ds[ds.length-1]}
+ fillCats();if(!keep)fillNames();
+ const from=$('#fFrom').value,to=$('#fTo').value,cat=$('#fCat').value,sub=$('#fSub').value;
+ const cur=snap(from,to,cat,sub),sh=cur.filter(r=>r.dq<0),ex=cur.filter(r=>r.dq>0),al=alerts(cur),sum=(a,f)=>a.reduce((s,r)=>s+f(r),0);
+ $('#kpis').innerHTML=[['Items counted',cur.length,''],['Short value','₹ '+fmt(Math.abs(sum(sh,r=>r.dv))),'sh'],['Excess value','₹ '+fmt(sum(ex,r=>r.dv)),'ex'],['Net variance','₹ '+fmt(sum(cur,r=>r.dv)),sum(cur,r=>r.dv)<0?'sh':'ex'],['Recheck alerts',al.length,al.length?'wa':'']].map(k=>`<div class="kpi"><small>${k[0]}</small><b class="${k[2]}">${k[1]}</b></div>`).join('');
+ const by=$('#topBy').value,f=r=>by==='val'?r.dv:r.dq;
+ const tb=(a,c)=>'<table><tr><th>Item name</th><th>Diff qty</th><th>Value ₹</th></tr>'+a.slice(0,30).map(r=>`<tr><td>${esc(r.item)}</td><td class="${c}">${fmt(r.dq)} ${esc(r.uom)}</td><td class="${c}">${fmt(r.dv)}</td></tr>`).join('')+'</table>';
+ $('#tShort').innerHTML=sh.length?tb([...sh].sort((a,b)=>f(a)-f(b)),'sh'):'<p class="mu">No short items</p>';
+ $('#tEx').innerHTML=ex.length?tb([...ex].sort((a,b)=>f(b)-f(a)),'ex'):'<p class="mu">No excess items</p>';
+ $('#alertBox').innerHTML=al.length?'<h3 class="wa">⚠ Unusual variance – please recheck / recount</h3><div class="tw"><table><tr><th>Item name</th><th>Diff qty</th><th>Usually</th><th>Value ₹</th></tr>'+al.map(r=>`<tr><td>${esc(r.item)}</td><td class="wa">${fmt(r.dq)} ${esc(r.uom)}</td><td class="mu">${fmt(r.usual)}</td><td>${fmt(r.dv)}</td></tr>`).join('')+'</table></div>':'<h3 class="ex" style="margin:0">✓ No unusual variance</h3>';
+ const um=cur.filter(r=>!r.mapped).length;$('#byUser').innerHTML=um?`<span class="wa">⚠ ${um} counted items are not in the item master (value ₹0)</span>`:'';$('#byUser').classList.toggle('hide',!um);
+ const grp=(rows,kf)=>{const m={};rows.forEach(r=>{const k=kf(r),o=m[k]=m[k]||{k,s:0,e:0};if(r.dv<0)o.s+=r.dv;else o.e+=r.dv});return Object.values(m).map(o=>({...o,t:o.s+o.e})).sort((a,b)=>a.t-b.t)};
+ const cl=v=>v<0?'sh':v>0?'ex':'',tt=(a,k)=>a.reduce((s,o)=>s+o[k],0);
+ const imp=(a,h)=>a.length?`<table><tr><th>${h}</th><th>Short</th><th>Excess</th><th>Total Impact</th></tr>`+a.map(o=>`<tr><td>${esc(o.k)}</td><td class="sh">${fmt(o.s)}</td><td class="ex">${fmt(o.e)}</td><td class="${cl(o.t)}">${fmt(o.t)}</td></tr>`).join('')+`<tr><td><b>Total</b></td><td class="sh"><b>${fmt(tt(a,'s'))}</b></td><td class="ex"><b>${fmt(tt(a,'e'))}</b></td><td class="${cl(tt(a,'t'))}"><b>${fmt(tt(a,'t'))}</b></td></tr></table>`:'<p class="mu">No data</p>';
+ $('#tCat').innerHTML=imp(grp(cur,r=>r.cat),'Category');$('#tSub').innerHTML=imp(grp(cur,r=>r.sub),'Sub Category');
+ const byD={};eff().filter(r=>r.counted&&(!from||r.date>=from)&&(!to||r.date<=to)).map(enrich).filter(r=>(!cat||r.cat===cat)&&(!sub||r.sub===sub)).forEach(r=>{const o=byD[r.date]=byD[r.date]||{d:r.date,n:0,sv:0,mv:0,s:0,e:0};o.n++;o.sv+=r.sv;o.mv+=r.mv;if(r.dv<0)o.s+=r.dv;else o.e+=r.dv});
+ const dl=Object.values(byD).sort((a,b)=>a.d<b.d?1:-1),fd=d=>d.split('-').reverse().join('-');
+ $('#tDate').innerHTML=dl.length?'<table><tr><th>Date</th><th>Items counted</th><th>System value</th><th>Counted value</th><th>Short</th><th>Excess</th><th>Total Impact</th></tr>'+dl.map(o=>`<tr><td>${fd(o.d)}</td><td>${o.n}</td><td>${fmt(o.sv)}</td><td>${fmt(o.mv)}</td><td class="sh">${fmt(o.s)}</td><td class="ex">${fmt(o.e)}</td><td class="${cl(o.s+o.e)}">${fmt(o.s+o.e)}</td></tr>`).join('')+'</table>':'<p class="mu">No data</p>';
+ trend()}
+function trend(){const t=$('#tType').value,n=$('#tName').value,met=$('#tMet').value,from=$('#fFrom').value,to=$('#fTo').value;
+ const a=eff().filter(r=>r.counted&&(!from||r.date>=from)&&(!to||r.date<=to)).map(enrich).filter(r=>key(t==='item'?r.item:t==='cat'?r.cat:r.sub)===key(n));
+ const ds=[...new Set(a.map(r=>r.date))].sort(),S=d=>a.filter(r=>r.date===d),z=ds.map(d=>S(d).reduce((s,r)=>s+(met==='val'?r.sv:r.sys),0)),p=ds.map(d=>S(d).reduce((s,r)=>s+(met==='val'?r.mv:r.man),0));
+ if(ch)ch.destroy();const mu=getComputedStyle(document.body).getPropertyValue('--mu').trim()||'#888';
+ ch=new Chart($('#trend'),{type:'line',data:{labels:ds,datasets:[{label:'System stock',data:z,borderColor:'#f59e0b',backgroundColor:'#f59e0b',tension:.3},{label:'Manual count',data:p,borderColor:'#5b5bd6',backgroundColor:'#5b5bd6',tension:.3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:mu,boxWidth:10,font:{size:10}}}},scales:{x:{ticks:{color:mu,font:{size:10}}},y:{ticks:{color:mu,font:{size:10}}}}}})}
+function dataTable(){const d=$('#vDate').value,q=key($('#vQ').value);
+ vRows=eff().filter(r=>r.date===d&&key(r.item).includes(q)).map(enrich).sort((a,b)=>a.item.localeCompare(b.item));
+ const al=new Set(alerts(vRows).map(r=>key(r.item)));
+ $('#vTable').innerHTML=vRows.length?'<table><tr><th>Item</th><th>Category</th><th>System qty</th><th>Manual qty</th><th>Diff</th><th></th></tr>'+vRows.slice(0,400).map((r,i)=>`<tr><td>${esc(r.item)}${al.has(key(r.item))?' <span class="wa">⚠</span>':''}</td><td>${esc(r.cat)}</td><td><input type="number" value="${r.hasSys?r.sys:''}" placeholder="—" onchange="edit(${i},'sys',this.value)"></td><td>${r.src==='Team'?fmt(r.man)+' 👥':`<input type="number" value="${r.counted?r.man:''}" placeholder="—" onchange="edit(${i},'man',this.value)">`}</td><td class="${!r.counted?'mu':r.dq<0?'sh':r.dq>0?'ex':''}">${r.counted?fmt(r.dq):'not counted'}</td><td>${r.id?`<button class="d" onclick="delRow(${i})">✕</button>`:''}</td></tr>`).join('')+'</table>':'<p class="mu">No rows. Use Import.</p>'}
+function edit(i,k,v){const r=vRows[i];if(!r||v==='')return;db.doc('closing/'+did(r.date,r.item)).set({date:r.date,item:r.item,[k]:+v||0},{merge:true})}
+function delRow(i){const r=vRows[i];if(r&&confirm('Delete uploaded system/manual qty of '+r.item+'?'))db.doc('closing/'+did(r.date,r.item)).delete()}
+async function batchDo(ops){for(let i=0;i<ops.length;i+=400){const b=db.batch();ops.slice(i,i+400).forEach(f=>f(b));await b.commit()}}
+async function delDate(){const d=$('#vDate').value;if(d&&confirm('Delete all uploaded rows for '+d+'? (team entries stay)'))await batchDo(closing.filter(r=>r.date===d).map(r=>b=>b.delete(db.doc('closing/'+r.id))))}
+function teamTable(){const d=$('#tmDate').value,a=team.filter(t=>t.date===d).sort((x,y)=>(y.ts||0)-(x.ts||0));
+ $('#tmTable').innerHTML=a.length?'<table><tr><th>Item</th><th>Qty</th><th>MFD</th><th>Use by</th><th>By</th><th></th></tr>'+a.map(t=>`<tr><td>${esc(t.item)}</td><td><input type="number" value="${t.qty}" onchange="tEdit('${t.id}',this.value)"></td><td>${esc(t.mfd||'')}</td><td>${esc(t.use||'')}</td><td>${esc(t.by||'')}</td><td><button class="d" onclick="tDel('${t.id}')">✕</button></td></tr>`).join('')+'</table>':'<p class="mu">No team entries for this date.</p>'}
+function tEdit(id,v){db.doc('counts/'+id).update({qty:+v||0}).catch(()=>alert('Not allowed'))}
+function tDel(id){if(confirm('Delete this entry?'))db.doc('counts/'+id).delete().catch(()=>alert('Not allowed'))}
+function entryUI(){const sel=$('#eItem'),v=sel.value;sel.innerHTML=[...items].sort((a,b)=>a.name.localeCompare(b.name)).map(i=>`<option>${esc(i.name)}</option>`).join('');if(v)sel.value=v;if(!$('#eDate').value)$('#eDate').value=today();
+ const my=team.filter(t=>t.uid===me.uid&&t.date===$('#eDate').value).sort((x,y)=>(y.ts||0)-(x.ts||0));
+ $('#myTable').innerHTML=my.length?my.map(t=>`<div class="row" style="justify-content:space-between"><span>${esc(t.item)} · <b>${fmt(t.qty)}</b></span><button class="d" onclick="tDel('${t.id}')">✕</button></div>`).join(''):'<p class="mu">Nothing entered for this date yet.</p>'}
+function submitEntry(){const item=$('#eItem').value,q=$('#eQty').value;if(!item||q===''){$('#eMsg').innerHTML='<p class="sh">Choose stock name and enter qty.</p>';return}
+ db.collection('counts').add({date:$('#eDate').value,item,qty:+q,mfd:$('#eMfd').value,use:$('#eUse').value,uid:me.uid,by:me.name||me.email||'',ts:Date.now()}).catch(()=>{$('#eMsg').innerHTML='<p class="sh">Could not save.</p>'});
+ $('#eQty').value='';$('#eMsg').innerHTML='<p class="ex">Saved ✓</p>'}
+async function addMember(){const n=$('#uN').value.trim(),e=$('#uE').value.trim(),p=$('#uP').value;if(!n||!e||p.length<6){$('#uM').textContent='Enter name, email and a password of 6+ characters.';return}
+ try{const sec=firebase.apps.find(a=>a.name==='sec')||firebase.initializeApp(firebaseConfig,'sec');const c=await sec.auth().createUserWithEmailAndPassword(e,p);
+ await db.doc('users/'+c.user.uid).set({name:n,email:e,role:'member',entry:true,view:false});await sec.auth().signOut();['uN','uE','uP'].forEach(i=>$('#'+i).value='');$('#uM').textContent='Member added. Share the app link and these login details.'}catch(x){$('#uM').textContent='Could not add: '+x.message}}
+function userTable(){$('#uTable').innerHTML='<table><tr><th>Name</th><th>Email</th><th>Enter stock</th><th>View dashboard</th></tr>'+users.map(u=>`<tr><td>${esc(u.name)}${u.role==='admin'?' (admin)':''}</td><td>${esc(u.email||'')}</td><td>${u.role==='admin'?'✓':`<input type="checkbox" ${u.entry?'checked':''} onchange="setAcc('${u.id}','entry',this.checked)">`}</td><td>${u.role==='admin'?'✓':`<input type="checkbox" ${u.view?'checked':''} onchange="setAcc('${u.id}','view',this.checked)">`}</td></tr>`).join('')+'</table>'}
+function setAcc(id,k,v){db.doc('users/'+id).update({[k]:v})}
+// ---------- item master ----------
+function saveMaster(){return db.doc('meta/master').set({items:JSON.stringify(items)})}
+function addPrice(i,p,d){i.prices=(i.prices||[]).filter(x=>x.d!==d);i.prices.push({d,p:+p||0});i.cost=lat(i)}
+function masterTable(){const q=key($('#mQ').value),a=items.filter(i=>key(i.name+i.cat+i.sub).includes(q));
+ $('#mTable').innerHTML=a.length?'<table><tr><th>Item</th><th>UOM</th><th>Latest price</th><th>As of</th><th>Category</th><th>Sub category</th><th></th></tr>'+a.slice(0,400).map(i=>{const n=encodeURIComponent(i.name);return`<tr><td>${esc(i.name)}</td><td>${esc(i.uom)}</td><td><input type="number" value="${lat(i)}" onchange="setCost('${n}',this.value)"></td><td class="mu">${latD(i)||'—'}</td><td>${esc(i.cat)}</td><td>${esc(i.sub)}</td><td><button class="d" onclick="delItem('${n}')">✕</button></td></tr>`}).join('')+'</table>':'<p class="mu">Add items above or import your master file.</p>'}
+function setCost(n,v){const i=items.find(x=>x.name===decodeURIComponent(n));if(i&&v!==''&&+v!==lat(i)){addPrice(i,v,today());saveMaster()}}
+function delItem(n){items=items.filter(i=>i.name!==decodeURIComponent(n));saveMaster()}
+function upItem(name,uom,price,cat,sub,d){const old=items.find(i=>key(i.name)===key(name))||{prices:[]};items=items.filter(i=>key(i.name)!==key(name));
+ const it={name,uom,cost:0,cat,sub,prices:old.prices||[]};if(price!==''&&price!=null)addPrice(it,price,d);else it.cost=lat(it);items.push(it)}
+function addItem(){const n=$('#aN').value.trim();if(!n)return;upItem(n,$('#aU').value.trim(),$('#aC').value,$('#aCat').value.trim(),$('#aSub').value.trim(),today());['aN','aU','aC','aSub'].forEach(i=>$('#'+i).value='');saveMaster()}
+const pick=(o,names)=>{for(const k in o)if(names.includes(key(k).replace(/[^a-z]/g,'')))return o[k];return''};
+async function readSheet(f){const wb=XLSX.read(await f.arrayBuffer(),{type:'array'});return XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:''})}
+async function impMaster(){const f=$('#mFile').files[0];if(!f)return;let c=0;
+ (await readSheet(f)).forEach(o=>{const n=String(pick(o,['itemname','item','name'])).trim();if(!n)return;
+  upItem(n,String(pick(o,['uom','unit'])).trim(),pick(o,['cost','price','latestprice','rate']),String(pick(o,['category','cat'])).trim(),String(pick(o,['subcategory','sub'])).trim(),nd(pick(o,['date','pricedate','asof']),today()));c++});
+ await saveMaster();alert(c+' items imported')}
+function nd(v,fb){if(v===''||v==null)return fb;if(typeof v==='number')return new Date(Math.round((v-25569)*864e5)).toISOString().slice(0,10);const m=String(v).trim().match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})$/);if(m){const y=m[3].length===2?'20'+m[3]:m[3];return`${y}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`}const d=new Date(v);return isNaN(d)?fb:d.toISOString().slice(0,10)}
+// ---------- import / templates ----------
+function tmpl(kind){let rows,name;
+ if(kind==='master'){rows=items.length?items.map(i=>({'Date':latD(i),'Item Name':i.name,'UOM':i.uom,'Cost':lat(i),'Category':i.cat,'Sub Category':i.sub})):[{'Date':today(),'Item Name':'','UOM':'','Cost':'','Category':'','Sub Category':''}];name='item_master_template.xlsx'}
+ else{const q=kind==='sys'?'System Qty':'Counted Qty';rows=(items.length?items:[{name:''}]).map(i=>({'Date':'','Item Name':i.name,[q]:''}));name=(kind==='sys'?'system_stock':'manual_count')+'_template.xlsx'}
+ const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(rows),'Data');XLSX.writeFile(wb,name)}
+const SYS=['systemqty','system','systemstock','zohoqty','zoho','stockqty','closingstock','qty'],MAN=['countedqty','manualqty','manual','physicalqty','physical','countqty','counted','count','restqty','rest','qty'];
+async function doImport(kind){const f=$('#iFile_'+kind).files[0];if(!f){$('#iMsg').textContent='Choose a file first.';return}
+ const fb=$('#iDate').value||today(),R={},M=mst(),miss=[];const up=(d,n,q)=>{R[d+'|'+key(n)]={date:d,item:n,[kind]:+q||0}};
+ try{if(/\.pdf$/i.test(f.name)){pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  const pdf=await pdfjsLib.getDocument({data:new Uint8Array(await f.arrayBuffer())}).promise,names=items.map(i=>i.name).sort((a,b)=>b.length-a.length);
+  for(let p=1;p<=pdf.numPages;p++){const tc=await(await pdf.getPage(p)).getTextContent(),L={};tc.items.forEach(t=>{const y=Math.round(t.transform[5]/3);(L[y]=L[y]||[]).push(t)});
+   Object.keys(L).forEach(y=>{const lc=L[y].sort((a,b)=>a.transform[4]-b.transform[4]).map(t=>t.str).join(' ').toLowerCase(),n=names.find(x=>lc.includes(key(x)));if(!n)return;const nums=lc.replace(key(n),' ').match(/-?\d+(\.\d+)?/g)||[];if(nums.length)up(fb,n,nums[0])})}
+ }else(await readSheet(f)).forEach(o=>{const n=String(pick(o,['itemname','item','name'])).trim(),q=pick(o,kind==='sys'?SYS:MAN);if(!n||q==='')return;up(nd(pick(o,['date']),fb),n,q);if(!M[key(n)]&&!miss.includes(n))miss.push(n)});
+ const vals=Object.values(R);await batchDo(vals.map(r=>b=>b.set(db.doc('closing/'+did(r.date,r.item)),r,{merge:true})));
+ $('#iMsg').innerHTML=`<b class="ex">${vals.length} ${kind==='sys'?'system stock':'manual count'} rows imported.</b>`+(miss.length?`<p class="wa">${miss.length} items not in master: ${esc(miss.slice(0,8).join(', '))}</p>`:'')}catch(e){$('#iMsg').innerHTML='<span class="sh">Could not import: '+esc(e.message)+'</span>'}}
+$('#iDate').value=today();
+</script></body></html>
