@@ -229,7 +229,7 @@ function nd(v,fb){if(v===''||v==null)return fb;if(typeof v==='number')return new
 function tmpl(kind){let rows,name;
  if(kind==='master'){rows=items.length?items.map(i=>({'Date':latD(i),'Item Name':i.name,'UOM':i.uom,'Cost':lat(i),'Category':i.cat,'Sub Category':i.sub})):[{'Date':today(),'Item Name':'','UOM':'','Cost':'','Category':'','Sub Category':''}];name='item_master_template.xlsx'}
  else{const q=kind==='sys'?'System Qty':'Counted Qty';rows=(items.length?items:[{name:''}]).map(i=>({'Date':'','Item Name':i.name,[q]:''}));name=(kind==='sys'?'system_stock':'manual_count')+'_template.xlsx'}
- const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(rows),'Data');XLSX.writeFile(wb,name)}
+ const ws=kind==='man'?XLSX.utils.aoa_to_sheet([['Date','Item Name','Counted Qty']]):XLSX.utils.json_to_sheet(rows);if(kind==='man')ws['!cols']=[{wch:14},{wch:40},{wch:14}];const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Data');XLSX.writeFile(wb,name)}
 const SYS=['systemqty','system','systemstock','zohoqty','zoho','stockqty','closingstock','qty'],MAN=['countedqty','manualqty','manual','physicalqty','physical','countqty','counted','count','restqty','rest','qty'];
 async function doImport(kind){const f=$('#iFile_'+kind).files[0];if(!f){$('#iMsg').textContent='Choose a file first.';return}
  const fb=$('#iDate').value||today(),R={},M=mst(),miss=[];const up=(d,n,q)=>{R[d+'|'+key(n)]={date:d,item:n,[kind]:+q||0}};
