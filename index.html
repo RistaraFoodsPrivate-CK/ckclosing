@@ -46,14 +46,14 @@ td input{width:76px;padding:3px 5px}.sh{color:var(--sh);font-weight:600}.ex{colo
 <div class="card chips" id="byUser" style="padding:8px 11px"></div>
 <div class="card" id="alertBox"></div>
 <div class="card" id="progBox"><div class="row hd"><h3>Counting progress</h3><span><select id="pgDate"></select> <button class="b g xb hide" onclick="xport('prog')">⬇ Export</button></span></div><div id="pgBar"></div><div class="tw" id="pgList"></div></div>
-<div class="card"><h3>Trend (latest price)</h3><div class="row"><select id="tType"><option value="item">Item wise</option><option value="cat">Category wise</option><option value="sub">Sub category wise</option></select><select id="tName"></select><select id="tMet"><option value="val">Value ₹</option><option value="qty">Qty</option></select></div><div class="cv"><canvas id="trend"></canvas></div></div>
+<div class="card"><h3>Trend (latest price)</h3><div class="row"><select id="tType"><option value="item">Item wise</option><option value="cat">Category wise</option><option value="sub">Sub category wise</option></select><div style="position:relative;flex:1;min-width:200px"><input id="tName" placeholder="Type item name to search…" autocomplete="off" style="width:100%"><div id="tList" class="elist hide"></div></div><select id="tMet"><option value="val">Value ₹</option><option value="qty">Qty</option></select></div><div id="tMsg" class="mu" style="padding:34px 0;text-align:center">Type an item name above to see its trend</div><div class="cv hide" id="cvBox"><canvas id="trend"></canvas></div></div>
 <div class="row"><b>Top 30 ranked by</b><select id="topBy"><option value="val">Value</option><option value="qty">Qty</option></select></div>
 <div class="grid2"><div class="card"><div class="row hd"><h3 class="sh">🔻 Top 30 Short</h3><button class="b g xb hide" onclick="xport('short')">⬇ Export</button></div><div class="tw" id="tShort"></div></div><div class="card"><div class="row hd"><h3 class="ex">🔺 Top 30 Excess</h3><button class="b g xb hide" onclick="xport('ex')">⬇ Export</button></div><div class="tw" id="tEx"></div></div></div>
 <div class="grid2"><div class="card"><div class="row hd"><h3>Category-wise Cost Impact (₹)</h3><button class="b g xb hide" onclick="xport('cat')">⬇ Export</button></div><div class="tw" id="tCat"></div></div><div class="card"><div class="row hd"><h3>Sub Category-wise Cost Impact (₹)</h3><button class="b g xb hide" onclick="xport('sub')">⬇ Export</button></div><div class="tw" id="tSub"></div></div></div>
 <div class="card"><div class="row hd"><h3>Date-wise Closing Summary (₹)</h3><button class="b g xb hide" onclick="xport('date')">⬇ Export</button></div><div class="tw" id="tDate"></div></div></section>
 <section id="p-top" class="hide"><div class="fbar"><label>From</label><input type="date" id="xFrom"><label>To</label><input type="date" id="xTo"><select id="xCat"></select><select id="xSub"></select><select id="xBy"><option value="val">Rank by Value</option><option value="qty">Rank by Qty</option></select></div>
 <div class="grid2"><div class="card"><div class="row hd"><h3 class="sh">🔻 Top 30 Short</h3><button class="b g xb hide" onclick="xport('xshort')">⬇ Export</button></div><div class="tw" id="xShort"></div></div><div class="card"><div class="row hd"><h3 class="ex">🔺 Top 30 Excess</h3><button class="b g xb hide" onclick="xport('xex')">⬇ Export</button></div><div class="tw" id="xEx"></div></div></div></section>
-<section id="p-data" class="hide"><div class="card"><div class="row"><select id="vDate"></select><input id="vQ" placeholder="Search item…"><button class="b g" onclick="delDate()">🗑 Delete uploads of this date</button></div><p class="mu" style="margin:0 0 8px">System qty and Manual qty. ⚠ = unusual variance, please recheck. “Team Entry” = counted by team on mobile.</p><div class="tw" id="vTable"></div></div></section>
+<section id="p-data" class="hide"><div class="card"><div class="row"><select id="vDate"></select><input id="vQ" placeholder="Search item…"><button class="b g xb hide" onclick="xport('data')">⬇ Export</button><button class="b g" onclick="delDate()">🗑 Delete uploads of this date</button></div><p class="mu" style="margin:0 0 8px">System qty and Manual qty. ⚠ = unusual variance, please recheck. “Team Entry” = counted by team on mobile.</p><div class="tw" id="vTable"></div></div></section>
 <section id="p-team" class="hide"><div class="card"><div class="row"><select id="tmDate"></select><span class="mu">Team Entry – counts entered on mobile, with name</span></div><div class="tw" id="tmTable"></div></div></section>
 <section id="p-imp" class="hide">
 <div class="card"><div class="row"><label><b>Closing date</b> – select this first, it applies to every row in the file</label><input type="date" id="iDate"></div><div id="iMsg"></div></div>
@@ -79,7 +79,7 @@ td input{width:76px;padding:3px 5px}.sh{color:var(--sh);font-weight:600}.ex{colo
 const firebaseConfig={apiKey:"AIzaSyAcnV2zDioUsuS0AORAgFaDQ6BMOe1Ohkg",authDomain:"closingck-d7c5b.firebaseapp.com",projectId:"closingck-d7c5b",appId:"1:594496597667:web:9c637fdcb00c13079e9916"};
 const $=s=>document.querySelector(s),key=s=>String(s||'').trim().toLowerCase(),fmt=n=>Number(n||0).toLocaleString('en-IN',{maximumFractionDigits:1}),esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js');
-let items=[],closing=[],team=[],users=[],me=null,ch=null,pg='dash',unsub=[],isAdm=false,canView=false,canEntry=false,vRows=[],dip=null,auth,db,fUser={},tEditId='',xU={},LAST={};
+let items=[],closing=[],team=[],users=[],me=null,ch=null,pg='dash',unsub=[],isAdm=false,canView=false,canEntry=false,vRows=[],dip=null,auth,db,fUser={},tEditId='',xU={},LAST={},TN=[];
 const pages=[['dash','Dashboard','dash','📊'],['top','Top 30','top30','🏆'],['data','Stock data','data','📋'],['team','Team Entry','team','👥'],['imp','Import','imp','⬆'],['adm','Admin','admin','⚙'],['ent','Count entry','ent','✏']];
 const can=k=>k==='admin'?isAdm:isAdm||!!(me&&me.active&&me.perms&&me.perms[k]);
 const ok=can;
@@ -133,8 +133,9 @@ function alerts(rows){const H={};eff().filter(r=>r.counted&&r.hasSys).forEach(r=
   if(dev>th)out.push({...r,usual:m})});return out.sort((a,b)=>Math.abs(b.dv)-Math.abs(a.dv))}
 function fillDates(sel){const d=dates().reverse(),v=sel.value;sel.innerHTML=d.map(x=>`<option>${x}</option>`).join('')||'<option value="">No data</option>';if(d.includes(v))sel.value=v}
 function render(){if(!me)return;fillDates($('#vDate'));fillDates($('#tmDate'));if(can('dash'))dash();if(can('top30'))topPage();if(can('data'))dataTable();if(can('team'))teamTable();if(isAdm){masterTable();userTable();qrInit()}if(can('ent'))entryUI();document.querySelectorAll('.xb').forEach(b=>b.classList.toggle('hide',!can('export')))}
-['fFrom','fTo','fCat','fSub','tType','tName','tMet','topBy','pgDate'].forEach(id=>$('#'+id).addEventListener('change',()=>{if(id==='fFrom')fUser.from=true;if(id==='fTo')fUser.to=true;dash(['tName','tMet','topBy','pgDate'].includes(id))}));
-$('#vDate').onchange=dataTable;$('#vQ').oninput=dataTable;$('#mQ').oninput=masterTable;$('#tmDate').onchange=teamTable;$('#eItem').oninput=eSearch;$('#eItem').onfocus=eSearch;$('#eList').onclick=e=>{const n=e.target.dataset.n;if(n){$('#eItem').value=n;$('#eList').classList.add('hide')}};document.addEventListener('click',e=>{if(!e.target.closest('#eItem,#eList'))$('#eList').classList.add('hide')});
+['fFrom','fTo','fCat','fSub','tType','tName','tMet','topBy','pgDate'].forEach(id=>$('#'+id).addEventListener('change',()=>{if(id==='tType')$('#tName').value='';if(id==='fFrom')fUser.from=true;if(id==='fTo')fUser.to=true;dash(['tName','tMet','topBy','pgDate'].includes(id))}));
+$('#vDate').onchange=dataTable;$('#vQ').oninput=dataTable;$('#mQ').oninput=masterTable;$('#tmDate').onchange=teamTable;$('#tName').oninput=tSearch;$('#tName').onfocus=tSearch;$('#tList').onclick=e=>{const n=e.target.dataset.n;if(n){$('#tName').value=n;$('#tList').classList.add('hide');trend()}};document.addEventListener('click',e=>{if(!e.target.closest('#tName,#tList'))$('#tList').classList.add('hide')});
+$('#eItem').oninput=eSearch;$('#eItem').onfocus=eSearch;$('#eList').onclick=e=>{const n=e.target.dataset.n;if(n){$('#eItem').value=n;$('#eList').classList.add('hide')}};document.addEventListener('click',e=>{if(!e.target.closest('#eItem,#eList'))$('#eList').classList.add('hide')});
 function topTb(a,c){return'<table><tr><th>Item name</th><th>Diff qty</th><th>Value ₹</th></tr>'+a.slice(0,30).map(r=>`<tr><td>${esc(r.item)}</td><td class="${c}">${fmt(r.dq)} ${esc(r.uom)}</td><td class="${c}">${fmt(r.dv)}</td></tr>`).join('')+'</table>'}
 function topPage(){const ds=dates();if(ds.length){if(!xU.f)$('#xFrom').value=ds[0];if(!xU.t)$('#xTo').value=ds[ds.length-1]}
  const c=$('#xCat'),cv=c.value,cats=[...new Set(items.map(i=>i.cat).filter(Boolean))].sort();
@@ -152,9 +153,10 @@ function xport(k){const L=LAST;let rows,nm;
  if(k==='short'||k==='ex'||k==='xshort'||k==='xex'){rows=(L[k]||[]).map(rowItem);nm=k.includes('short')?'Top30_Short':'Top30_Excess'}
  else if(k==='cat'||k==='sub'){rows=(L[k]||[]).map(o=>({[k==='cat'?'Category':'Sub Category']:o.k,'Short':rnd2(o.s),'Excess':rnd2(o.e),'Total Impact':rnd2(o.t)}));nm=k==='cat'?'Category_Cost_Impact':'SubCategory_Cost_Impact'}
  else if(k==='date'){rows=(L.date||[]).map(o=>({'Date':fmtD(o.d),'Items Counted':o.n,'System Value':rnd2(o.sv),'Counted Value':rnd2(o.mv),'Short':rnd2(o.s),'Excess':rnd2(o.e),'Total Impact':rnd2(o.s+o.e)}));nm='Date_wise_Summary'}
+ else if(k==='data'){rows=vRows.map(r=>({'Date':fmtD(r.date),'Item Name':r.item,'Category':r.cat,'Sub Category':r.sub,'UOM':r.uom,'System Qty':r.hasSys?r.sys:'','Manual Qty':r.counted?r.man:'','Diff Qty':r.counted?r.dq:'','Source':r.src==='Team'?'Team Entry · '+r.by.join(', '):(r.src||'')}));nm='Stock_Data_'+$('#vDate').value}
  else{rows=(L.prog||[]).map(r=>({'Item Name':r.item,'Category':r.cat,'Sub Category':r.sub,'UOM':r.uom,'System Qty':r.sys,'System Value ₹':rnd2(r.sv)}));nm='Not_Counted_'+$('#pgDate').value}
  if(!rows.length){alert('Nothing to export');return}
- const rg=k==='prog'?[]:k[0]==='x'&&k!=='xx'&&(k==='xshort'||k==='xex')?[$('#xFrom').value,$('#xTo').value]:[$('#fFrom').value,$('#fTo').value];
+ const rg=k==='prog'||k==='data'?[]:k[0]==='x'&&k!=='xx'&&(k==='xshort'||k==='xex')?[$('#xFrom').value,$('#xTo').value]:[$('#fFrom').value,$('#fTo').value];
  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(rows),'Data');XLSX.writeFile(wb,nm+(rg.length?'_'+rg[0]+'_to_'+rg[1]:'')+'.xlsx')}
 function swapCat(){if(!items.length)return;const e=items[0];if(!confirm('Swap Category and Sub Category for ALL '+items.length+' items?\n\nExample: "'+e.name+'"\nNow: Category = '+e.cat+', Sub Category = '+e.sub+'\nAfter: Category = '+e.sub+', Sub Category = '+e.cat))return;items.forEach(i=>{const t=i.cat;i.cat=i.sub;i.sub=t});saveMaster()}
 function resetF(){fUser.from=fUser.to=false;dash()}
@@ -162,9 +164,12 @@ function fillCats(){const c=$('#fCat'),cv=c.value,cats=[...new Set(items.map(i=>
  c.innerHTML='<option value="">All categories</option>'+cats.map(x=>`<option>${esc(x)}</option>`).join('');c.value=cats.includes(cv)?cv:'';
  const s=$('#fSub'),sv=s.value,subs=[...new Set(items.filter(i=>!c.value||i.cat===c.value).map(i=>i.sub).filter(Boolean))].sort();
  s.innerHTML='<option value="">All sub categories</option>'+subs.map(x=>`<option>${esc(x)}</option>`).join('');s.value=subs.includes(sv)?sv:''}
-function fillNames(){const t=$('#tType').value,c=$('#fCat').value,s=$('#fSub').value,sel=$('#tName'),v=sel.value;
- const n=[...new Set(items.filter(i=>(!c||i.cat===c)&&(!s||i.sub===s)).map(i=>t==='item'?i.name:t==='cat'?i.cat:i.sub).filter(Boolean))].sort();
- sel.innerHTML=n.map(x=>`<option>${esc(x)}</option>`).join('');if(n.includes(v))sel.value=v}
+function fillNames(){const t=$('#tType').value,c=$('#fCat').value,s=$('#fSub').value;
+ TN=[...new Set(items.filter(i=>(!c||i.cat===c)&&(!s||i.sub===s)).map(i=>t==='item'?i.name:t==='cat'?i.cat:i.sub).filter(Boolean))].sort();
+ $('#tName').placeholder=t==='item'?'Type item name to search…':t==='cat'?'Type category to search…':'Type sub category to search…'}
+function tSearch(){const q=key($('#tName').value).split(/\s+/).filter(Boolean),box=$('#tList');
+ const a=TN.filter(n=>q.every(w=>key(n).includes(w))).slice(0,40);
+ box.innerHTML=a.map(n=>`<div data-n="${esc(n)}">${esc(n)}</div>`).join('')||'<div class="mu">No match</div>';box.classList.remove('hide')}
 function dash(keep){const ds=dates();if(ds.length){if(!fUser.from)$('#fFrom').value=ds[0];if(!fUser.to)$('#fTo').value=ds[ds.length-1]}
  fillCats();if(!keep)fillNames();
  const from=$('#fFrom').value,to=$('#fTo').value,cat=$('#fCat').value,sub=$('#fSub').value;
@@ -192,7 +197,7 @@ function dash(keep){const ds=dates();if(ds.length){if(!fUser.from)$('#fFrom').va
  $('#pgList').innerHTML=left.length?'<table><tr><th>Not counted yet</th><th>Category</th><th>System qty</th><th>System value ₹</th></tr>'+left.map(r=>`<tr><td>${esc(r.item)}</td><td>${esc(r.cat)}</td><td>${fmt(r.sys)} ${esc(r.uom)}</td><td>${fmt(r.sv)}</td></tr>`).join('')+'</table>':(P.length?'<p class="ex">✓ All items counted</p>':'<p class="mu">No system stock for this date</p>');
  LAST={short:sS,ex:sE,cat:grp(cur,r=>r.cat),sub:grp(cur,r=>r.sub),date:dl,prog:left,xshort:LAST.xshort,xex:LAST.xex};
  trend()}
-function trend(){const t=$('#tType').value,n=$('#tName').value,met=$('#tMet').value,from=$('#fFrom').value,to=$('#fTo').value;
+function trend(){const t=$('#tType').value,n=$('#tName').value.trim(),met=$('#tMet').value,from=$('#fFrom').value,to=$('#fTo').value;$('#tMsg').classList.toggle('hide',!!n);$('#cvBox').classList.toggle('hide',!n);if(!n){if(ch){ch.destroy();ch=null}return}
  const a=eff().filter(r=>r.counted&&(!from||r.date>=from)&&(!to||r.date<=to)).map(enrich).filter(r=>key(t==='item'?r.item:t==='cat'?r.cat:r.sub)===key(n));
  const ds=[...new Set(a.map(r=>r.date))].sort(),S=d=>a.filter(r=>r.date===d),z=ds.map(d=>S(d).reduce((s,r)=>s+(met==='val'?r.sv:r.sys),0)),p=ds.map(d=>S(d).reduce((s,r)=>s+(met==='val'?r.mv:r.man),0));
  if(ch)ch.destroy();const mu=getComputedStyle(document.body).getPropertyValue('--mu').trim()||'#888';
