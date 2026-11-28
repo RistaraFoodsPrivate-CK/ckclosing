@@ -34,7 +34,7 @@ td input{width:76px;padding:3px 5px}.sh{color:var(--sh);font-weight:600}.ex{colo
 </style></head><body>
 <div id="login" class="card hide" style="max-width:360px;margin:50px auto"><h3>📦 Inventory Closing – Sign in</h3>
 <input id="lE" type="email" placeholder="Email" style="width:100%;margin-bottom:8px"><input id="lP" type="password" placeholder="Password" style="width:100%;margin-bottom:10px">
-<button class="b big" onclick="signIn()">Sign in</button><p id="lM" class="sh"></p></div>
+<button class="b big" onclick="signIn()">Sign in</button><p id="lM" class="sh"></p><button id="instL" class="b g big hide" onclick="installApp()">⬇ Install app on this phone</button><p id="iosHint" class="mu hide">iPhone: tap the Share button, then “Add to Home Screen”.</p></div>
 <div id="app" class="hide">
 <aside><div class="brand">📦 <span>Inventory Closing</span></div><nav id="nav"></nav><div class="sf"><button id="inst" class="hide" onclick="installApp()"><i>⬇</i><span>Install app</span></button><button onclick="auth.signOut()"><i>⏻</i><span>Sign out</span></button></div></aside>
 <div id="ov" onclick="tog()"></div>
@@ -61,7 +61,8 @@ td input{width:76px;padding:3px 5px}.sh{color:var(--sh);font-weight:600}.ex{colo
 <section id="p-adm" class="hide">
 <div class="card"><h3>Team members</h3><div class="row"><input id="uN" placeholder="Name"><input id="uE" type="email" placeholder="Email"><input id="uP" type="password" placeholder="Password (min 6)"><button class="b" onclick="addMember()">Add member</button></div><p id="uM" class="mu"></p><p class="mu">Tick “Allow login” first, then tick only the options that person may use. Admin always sees everything.</p><div class="tw" id="uTable"></div></div>
 <div class="card"><h3>Item master</h3><div class="row"><input id="aN" placeholder="Item name"><input id="aU" placeholder="UOM" style="width:70px"><input id="aC" type="number" placeholder="Price" style="width:80px"><input id="aCat" placeholder="Category"><input id="aSub" placeholder="Sub category"><button class="b" onclick="addItem()">Add</button></div>
-<div class="row"><button class="b g" onclick="tmpl('master')">⬇ Template</button><input type="file" id="mFile" accept=".xlsx,.xls,.csv"><button class="b g" onclick="impMaster()">Import master</button><input id="mQ" placeholder="Search…"></div><p class="mu">Excel: Date, Item Name, UOM, Cost, Category, Sub Category. The price with the latest date is always used.</p><div class="tw" id="mTable"></div></div></section>
+<div class="row"><button class="b g" onclick="tmpl('master')">⬇ Template</button><input type="file" id="mFile" accept=".xlsx,.xls,.csv"><button class="b g" onclick="impMaster()">Import master</button><input id="mQ" placeholder="Search…"></div><p class="mu">Excel: Date, Item Name, UOM, Cost, Category, Sub Category. The price with the latest date is always used.</p><div class="tw" id="mTable"></div></div>
+<div class="card"><h3>Download / Share app</h3><div class="row" style="align-items:flex-start;gap:16px"><div id="qrBox" style="background:#fff;padding:8px;border-radius:8px;width:fit-content;min-width:196px;min-height:196px"></div><div style="flex:1;min-width:200px"><p class="mu" style="margin-top:0">Team members scan this QR with their phone camera. It opens the app. Then they tap <b>Install app</b> (Android: shown on the login screen or in the Chrome menu. iPhone: Share → Add to Home Screen).</p><p id="appLink" style="word-break:break-all"></p><div class="row"><button class="b" onclick="shareApp()">📤 Share link</button><button class="b g" onclick="copyLink()">Copy link</button><button class="b g" onclick="dlQR()">⬇ Download QR</button></div></div></div></div></section>
 <section id="p-ent" class="hide"><div class="card"><h3>Stock count entry</h3><label class="fld">Date</label><input type="date" id="eDate"><label class="fld">Stock name</label><div style="position:relative"><input id="eItem" placeholder="Type to search item…" autocomplete="off" style="width:100%;font-size:15px;padding:10px"><div id="eList" class="elist hide"></div></div><label class="fld">Qty</label><input type="number" inputmode="decimal" id="eQty" placeholder="0"><label class="fld">MFD</label><input type="date" id="eMfd"><label class="fld">Use by</label><input type="date" id="eUse"><p><button class="b big" onclick="submitEntry()">Save count</button></p><div id="eMsg"></div></div><div class="card"><h3>My entries</h3><p class="mu" style="margin:0 0 6px">Latest first. Saved entries cannot be changed here. Ask the admin to correct a mistake.</p><div id="myTable"></div></div></section>
 </main></div></div>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -69,6 +70,7 @@ td input{width:76px;padding:3px 5px}.sh{color:var(--sh);font-weight:600}.ex{colo
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"></script>
 <script>
@@ -129,7 +131,7 @@ function alerts(rows){const H={};eff().filter(r=>r.counted&&r.hasSys).forEach(r=
   const m=h.reduce((a,b)=>a+b,0)/h.length,sd=Math.sqrt(h.reduce((a,b)=>a+(b-m)**2,0)/h.length),dev=Math.abs(r.dq-m),th=Math.max(3*sd,.02*Math.max(r.sys,1));
   if(dev>th)out.push({...r,usual:m})});return out.sort((a,b)=>Math.abs(b.dv)-Math.abs(a.dv))}
 function fillDates(sel){const d=dates().reverse(),v=sel.value;sel.innerHTML=d.map(x=>`<option>${x}</option>`).join('')||'<option value="">No data</option>';if(d.includes(v))sel.value=v}
-function render(){if(!me)return;fillDates($('#vDate'));fillDates($('#tmDate'));if(can('dash'))dash();if(can('top30'))topPage();if(can('data'))dataTable();if(can('team'))teamTable();if(isAdm){masterTable();userTable()}if(can('ent'))entryUI()}
+function render(){if(!me)return;fillDates($('#vDate'));fillDates($('#tmDate'));if(can('dash'))dash();if(can('top30'))topPage();if(can('data'))dataTable();if(can('team'))teamTable();if(isAdm){masterTable();userTable();qrInit()}if(can('ent'))entryUI()}
 ['fFrom','fTo','fCat','fSub','tType','tName','tMet','topBy'].forEach(id=>$('#'+id).addEventListener('change',()=>{if(id==='fFrom')fUser.from=true;if(id==='fTo')fUser.to=true;dash(['tName','tMet','topBy'].includes(id))}));
 $('#vDate').onchange=dataTable;$('#vQ').oninput=dataTable;$('#mQ').oninput=masterTable;$('#tmDate').onchange=teamTable;$('#eItem').oninput=eSearch;$('#eItem').onfocus=eSearch;$('#eList').onclick=e=>{const n=e.target.dataset.n;if(n){$('#eItem').value=n;$('#eList').classList.add('hide')}};document.addEventListener('click',e=>{if(!e.target.closest('#eItem,#eList'))$('#eList').classList.add('hide')});
 function topTb(a,c){return'<table><tr><th>Item name</th><th>Diff qty</th><th>Value ₹</th></tr>'+a.slice(0,30).map(r=>`<tr><td>${esc(r.item)}</td><td class="${c}">${fmt(r.dq)} ${esc(r.uom)}</td><td class="${c}">${fmt(r.dv)}</td></tr>`).join('')+'</table>'}
@@ -241,6 +243,13 @@ async function doImport(kind){const fb=$('#iDate').value;if(!fb){$('#iMsg').inne
  }else(await readSheet(f)).forEach(o=>{const n=String(pick(o,['itemname','item','name'])).trim(),q=pick(o,kind==='sys'?SYS:MAN);if(!n||q==='')return;up(fb,n,q);if(!M[key(n)]&&!miss.includes(n))miss.push(n)});
  const vals=Object.values(R);await batchDo(vals.map(r=>b=>b.set(db.doc('closing/'+did(r.date,r.item)),r,{merge:true})));
  $('#iMsg').innerHTML=`<b class="ex">${vals.length} ${kind==='sys'?'system stock':'manual count'} rows imported.</b>`+(miss.length?`<p class="wa">${miss.length} items not in master: ${esc(miss.slice(0,8).join(', '))}</p>`:'')}catch(e){$('#iMsg').innerHTML='<span class="sh">Could not import: '+esc(e.message)+'</span>'}}
-window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();dip=e;$('#inst').classList.remove('hide')});
-async function installApp(){if(!dip)return;dip.prompt();await dip.userChoice;dip=null;$('#inst').classList.add('hide')}
+function appUrl(){return location.origin+location.pathname}
+let qrDone=false;
+function qrInit(){if(qrDone||!window.QRCode||!$('#qrBox'))return;$('#qrBox').innerHTML='';new QRCode($('#qrBox'),{text:appUrl(),width:180,height:180,correctLevel:QRCode.CorrectLevel.M});$('#appLink').textContent=appUrl();qrDone=true}
+async function shareApp(){if(navigator.share){try{await navigator.share({title:'Inventory Closing',text:'Open this link, sign in and install the app:',url:appUrl()})}catch(e){}return}copyLink()}
+function copyLink(){const u=appUrl();(navigator.clipboard?navigator.clipboard.writeText(u):Promise.reject()).then(()=>alert('Link copied'),()=>prompt('Copy this link',u))}
+function dlQR(){const c=$('#qrBox canvas'),i=$('#qrBox img'),src=c?c.toDataURL('image/png'):(i&&i.src);if(!src)return;const a=document.createElement('a');a.href=src;a.download='inventory_closing_qr.png';a.click()}
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();dip=e;['inst','instL'].forEach(i=>{const el=$('#'+i);if(el)el.classList.remove('hide')})});
+async function installApp(){if(!dip)return;dip.prompt();await dip.userChoice;dip=null;['inst','instL'].forEach(i=>{const el=$('#'+i);if(el)el.classList.add('hide')})}
+if(/iphone|ipad/i.test(navigator.userAgent)&&!navigator.standalone){const h=$('#iosHint');if(h)h.classList.remove('hide')}
 </script></body></html>
